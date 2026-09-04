@@ -3,45 +3,47 @@
 Web app statica su GitHub Pages, dati condivisi su Supabase. Due utenti,
 Matteo e Gaia, ogni spesa con quote divisibili come si vuole. Solo CHF.
 
-## Struttura
+## File
 
 ```
 index.html                        l'app, file unico
-schema.sql                        da eseguire una volta in Supabase
+manifest.webmanifest              serve per installarla in home
+icon-192.png icon-512.png         icone dell'app
+apple-touch-icon.png favicon.png  icone per iPhone e per la scheda del browser
+schema.sql                        già eseguito, si tiene come riferimento
 .github/workflows/heartbeat.yml   evita la pausa del progetto gratuito
 ```
 
-## Installazione
+## Aggiornare all'ultima versione
 
-1. **Supabase** — crea un progetto nuovo su supabase.com (piano gratuito,
-   nessuna carta). Regione: Frankfurt o Zurigo, la più vicina.
+Carica nel repo `index.html` (sostituendo quello vecchio), `manifest.webmanifest`
+e i quattro png, tutti nella cartella principale. Il database non si tocca:
+lo schema è lo stesso, nessuna query da rieseguire.
 
-2. **Schema** — apri SQL Editor, incolla tutto `schema.sql`, esegui.
+Dopo il commit, GitHub Pages ci mette circa un minuto. Se vedi ancora la
+versione vecchia, ricarica tenendo premuto il tasto di refresh, oppure apri
+la pagina in una scheda anonima: è la cache del browser.
 
-3. **Utenti** — Authentication > Users > Add user, due volte: la tua email
-   e quella di Gaia, con password. Lascia "Auto Confirm User" attivo.
+## Metterla in home sul telefono
 
-4. **Collega gli utenti** — torna in SQL Editor, togli il commento dalle
-   due `insert into public.membri` in fondo a `schema.sql`, metti le email
-   vere ed esegui. Verifica con la `select` finale: devono uscire due righe.
+- **iPhone**: apri il sito in Safari, tasto Condividi, "Aggiungi alla schermata
+  Home". Deve essere Safari, da Chrome iOS non funziona.
+- **Android**: apri in Chrome, menu con i tre puntini, "Installa app" o
+  "Aggiungi a schermata Home".
 
-5. **Chiudi le registrazioni** — Authentication > Sign In / Providers,
-   disattiva "Allow new users to sign up". Senza questo chiunque abbia la
-   anon key potrebbe crearsi un account (non vedrebbe le spese, perché non
-   è in `membri`, ma tanto vale chiudere la porta).
+Da lì si apre a tutto schermo, senza barra del browser, con la sua icona.
 
-6. **Chiavi** — Settings > API Keys. Copia il Project URL e la **publishable
-   key** (`sb_publishable_...`) dentro `CONFIG` in cima allo script di
-   `index.html`. Se il progetto mostra ancora solo le chiavi legacy con un
-   pulsante per crearne di nuove, premilo e usa quelle nuove.
+## Cosa c'è dentro
 
-7. **Repo** — nuovo repo su GitHub, carica i tre file, poi Settings > Pages,
-   sorgente branch `main`, cartella `/`.
-
-8. **Heartbeat** — Settings > Secrets and variables > Actions, aggiungi
-   `SUPABASE_URL` (lo stesso di prima) e `SUPABASE_SERVICE_KEY` (la **secret
-   key**, `sb_secret_...`, non la publishable). Poi Actions > heartbeat
-   supabase > Run workflow, per verificare che passi.
+- **Spese** — saldo in evidenza, elenco del mese con icona e colore per
+  categoria, quanto ti è costata ogni voce, filtro per categoria. Tocca una
+  riga per modificarla o eliminarla.
+- **Riepilogo** — totale del mese e confronto col mese prima, anello per
+  categoria con percentuali, quanto ha anticipato ciascuno e quanto è a
+  carico di ciascuno, andamento degli ultimi sei mesi.
+- **Pareggia** — inserisce il rimborso che riporta il saldo a zero, con
+  l'importo già compilato.
+- Tema chiaro e scuro in automatico, secondo le impostazioni del telefono.
 
 ## Cose da sapere
 
@@ -51,21 +53,17 @@ schema.sql                        da eseguire una volta in Supabase
   policy.
 - **La secret key non va mai in `index.html`.** Sta solo nei secrets di
   GitHub, perché scavalca la RLS.
-- **Nomi delle chiavi.** I progetti creati da novembre 2025 non hanno più
-  `anon` e `service_role`: publishable e secret sono gli equivalenti, con gli
-  stessi permessi.
 - **Sincronizzazione al reload.** Le spese dell'altra persona compaiono
-  quando ricarichi o quando torni sull'app dopo averla lasciata. Non c'è
-  push in tempo reale: si può aggiungere dopo attivando Realtime su Supabase.
+  quando ricarichi o quando torni sull'app dopo averla lasciata.
 - **Le Action programmate si fermano** se il repo resta senza commit per 60
-  giorni. GitHub manda una mail prima di disattivarle.
-- **Backup.** Il piano gratuito di Supabase non conserva backup. Usa il
-  pulsante Esporta ogni tanto e tieni il JSON da parte.
+  giorni. GitHub avvisa per mail prima di disattivarle.
+- **Backup.** Il piano gratuito di Supabase non conserva backup. Usa Esporta
+  ogni tanto e tieni il JSON da parte.
 
 ## Prossimi passi possibili
 
-- Modifica di una spesa già inserita (ora si può solo eliminare e rifare)
-- Riepilogo per categoria e confronto tra mesi
 - Spese ricorrenti inserite in automatico (affitto, abbonamenti)
-- Tema scuro
+- Categorie personalizzate invece di quelle fisse
+- Budget mensile per categoria con avviso al superamento
+- Funzionamento offline con service worker
 - Realtime, se il reload diventa scomodo
