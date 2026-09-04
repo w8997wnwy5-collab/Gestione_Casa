@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E9ECE8">
+<title>Spese di casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E9ECE8;
+  --card:#F5F7F3;
+  --ink:#16211D;
+  --soft:#5A6763;
+  --line:#CBD2CB;
+  --matteo:#1F5F5B;
+  --gaia:#7A3E5C;
+  --focus:#B08900;
+  --radius:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:16px;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.num{font-family:"Space Grotesk",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
+button{font:inherit;color:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:560px;margin:0 auto;padding:0 18px}
+.hidden{display:none !important}
+
+/* ---------- barra in alto ---------- */
+header.top{
+  display:flex;align-items:baseline;justify-content:space-between;
+  gap:12px;padding:18px 0 14px;
+}
+header.top h1{
+  font-family:"Space Grotesk",sans-serif;
+  font-size:17px;font-weight:500;letter-spacing:-0.01em;margin:0;
+}
+.top-actions{display:flex;gap:14px;align-items:baseline}
+.linkbtn{background:none;border:0;padding:0;color:var(--soft);font-size:14px;text-decoration:underline;text-underline-offset:3px}
+.linkbtn:hover{color:var(--ink)}
+
+/* ---------- saldo: l'unico elemento forte ---------- */
+.saldo{padding:8px 0 26px;border-bottom:1px solid var(--line)}
+.saldo p{margin:0;font-size:15px;color:var(--soft)}
+.saldo .cifra{
+  font-family:"Space Grotesk",sans-serif;
+  font-variant-numeric:tabular-nums;
+  font-weight:500;
+  font-size:clamp(52px,17vw,76px);
+  line-height:1;letter-spacing:-0.035em;
+  margin:6px 0 2px;
+  display:flex;align-items:baseline;gap:8px;
+}
+.saldo .cifra .val{color:var(--matteo)}
+.saldo.verso-gaia .cifra .val{color:var(--gaia)}
+.saldo.pari .cifra .val{color:var(--ink)}
+.saldo .cifra small{font-size:19px;font-weight:400;color:var(--soft);letter-spacing:0}
+.saldo .sotto{display:flex;align-items:center;gap:14px;margin-top:12px;flex-wrap:wrap}
+.saldo .sotto span{font-size:14px;color:var(--soft)}
+
+/* ---------- pulsanti ---------- */
+.btn{
+  border:1px solid var(--ink);background:var(--ink);color:var(--card);
+  border-radius:var(--radius);padding:11px 16px;font-size:15px;font-weight:500;
+}
+.btn:hover{opacity:.9}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink);opacity:1}
+.btn.pieno{width:100%;padding:14px}
+.azioni{display:flex;gap:10px;padding:18px 0}
+
+/* ---------- elenco ---------- */
+.mese{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:22px 0 8px;border-bottom:1px solid var(--line);
+}
+.mese h2{margin:0;font-size:15px;font-weight:500;letter-spacing:.01em}
+.mese .tot{font-size:14px;color:var(--soft)}
+.riga{width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:13px 0;display:block}
+.riga:hover{background:rgba(0,0,0,.02)}
+.riga .l1{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.riga .desc{font-size:16px}
+.riga .imp{font-size:16px;white-space:nowrap}
+.riga .l2{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:5px}
+.riga .meta{font-size:13px;color:var(--soft)}
+.riga .giorno{font-size:13px;color:var(--soft);width:26px;display:inline-block}
+.quota{display:flex;height:3px;width:64px;border-radius:2px;overflow:hidden;background:var(--line)}
+.quota i{display:block;height:100%}
+.quota .m{background:var(--matteo)}
+.quota .g{background:var(--gaia)}
+.riga.rimb .desc{font-style:italic;color:var(--soft)}
+.dettaglio{padding:2px 0 16px;border-bottom:1px solid var(--line)}
+.dettaglio dl{margin:0 0 12px;font-size:14px;color:var(--soft)}
+.dettaglio dl div{display:flex;gap:8px;padding:2px 0}
+.dettaglio dt{min-width:96px}
+.dettaglio dd{margin:0;color:var(--ink)}
+.vuoto{padding:34px 0;color:var(--soft);font-size:15px}
+
+/* ---------- pannello di inserimento ---------- */
+.velo{position:fixed;inset:0;background:rgba(22,33,29,.4);z-index:10}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:11;
+  background:var(--card);border-radius:16px 16px 0 0;
+  max-height:92vh;overflow-y:auto;
+  padding:20px 18px calc(24px + env(safe-area-inset-bottom));
+  box-shadow:0 -1px 0 var(--line);
+}
+@media(min-width:560px){.sheet{max-width:560px;margin:0 auto;border-radius:16px;bottom:16px;left:16px;right:16px}}
+.sheet h2{font-family:"Space Grotesk",sans-serif;font-size:19px;font-weight:500;margin:0 0 16px}
+.campo{margin-bottom:16px}
+.campo label{display:block;font-size:14px;color:var(--soft);margin-bottom:6px}
+.campo input[type=text],.campo input[type=number],.campo input[type=date],.campo input[type=email],.campo input[type=password]{
+  width:100%;padding:11px 12px;background:var(--paper);
+  border:1px solid var(--line);border-radius:var(--radius);
+}
+.campo input:focus{border-color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  border:1px solid var(--line);background:transparent;
+  border-radius:999px;padding:7px 13px;font-size:14px;
+}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.chip.m[aria-pressed=true]{background:var(--matteo);border-color:var(--matteo)}
+.chip.g[aria-pressed=true]{background:var(--gaia);border-color:var(--gaia)}
+.slider{display:flex;align-items:center;gap:12px;margin-top:12px}
+.slider input{flex:1;accent-color:var(--matteo)}
+.slider .leg{font-size:13px;color:var(--soft);white-space:nowrap}
+.importo-grande{
+  font-family:"Space Grotesk",sans-serif;font-size:30px;font-variant-numeric:tabular-nums;
+  padding:8px 12px !important;
+}
+
+/* ---------- login ---------- */
+.login{max-width:340px;margin:16vh auto 0;padding:0 18px}
+.login h1{font-family:"Space Grotesk",sans-serif;font-size:26px;font-weight:500;letter-spacing:-0.02em;margin:0 0 6px}
+.login p.intro{margin:0 0 24px;color:var(--soft);font-size:15px}
+
+.avviso{
+  margin:14px 0;padding:11px 13px;border-radius:var(--radius);
+  background:#F6E7E2;color:#7A2E16;font-size:14px;border:1px solid #E4C7BE;
+}
+.stato{font-size:13px;color:var(--soft);padding:10px 0 30px}
+
+@media(prefers-reduced-motion:no-preference){
+  .sheet{animation:su .18s ease-out}
+  @keyframes su{from{transform:translateY(14px);opacity:.6}to{transform:none;opacity:1}}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<section id="vistaLogin" class="login hidden">
+  <h1>Spese di casa</h1>
+  <p class="intro">Entra con il tuo account per vedere le spese condivise.</p>
+  <div id="erroreLogin" class="avviso hidden"></div>
+  <div class="campo">
+    <label for="email">Email</label>
+    <input id="email" type="email" autocomplete="username" inputmode="email">
+  </div>
+  <div class="campo">
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password">
+  </div>
+  <button id="btnEntra" class="btn pieno">Entra</button>
+</section>
+
+<!-- ================= APP ================= -->
+<main id="vistaApp" class="wrap hidden">
+  <header class="top">
+    <h1>Spese di casa</h1>
+    <div class="top-actions">
+      <button id="btnRicarica" class="linkbtn">Ricarica</button>
+      <button id="btnEsporta" class="linkbtn">Esporta</button>
+      <button id="btnEsci" class="linkbtn">Esci</button>
+    </div>
+  </header>
+
+  <section id="saldo" class="saldo" aria-live="polite">
+    <p id="saldoTesto">Calcolo del saldo…</p>
+    <div class="cifra"><span class="val" id="saldoCifra">—</span><small>CHF</small></div>
+    <div class="sotto">
+      <span id="saldoNota"></span>
+      <button id="btnSalda" class="btn ghost hidden">Registra un rimborso</button>
+    </div>
+  </section>
+
+  <div class="azioni">
+    <button id="btnAggiungi" class="btn pieno">Aggiungi una spesa</button>
+  </div>
+
+  <div id="elenco"></div>
+  <p id="stato" class="stato"></p>
+</main>
+
+<!-- ================= PANNELLO NUOVA SPESA ================= -->
+<div id="velo" class="velo hidden"></div>
+<section id="sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="sheetTitolo">
+  <h2 id="sheetTitolo">Nuova spesa</h2>
+  <div id="erroreSheet" class="avviso hidden"></div>
+
+  <div class="campo">
+    <label for="fImporto">Importo in CHF</label>
+    <input id="fImporto" class="importo-grande num" type="number" inputmode="decimal" step="0.05" min="0.05" placeholder="0.00">
+  </div>
+
+  <div class="campo">
+    <label for="fDescrizione">Descrizione</label>
+    <input id="fDescrizione" type="text" placeholder="Spesa Coop, affitto, bolletta…">
+  </div>
+
+  <div class="campo">
+    <label for="fData">Data</label>
+    <input id="fData" type="date">
+  </div>
+
+  <div class="campo" id="campoCategoria">
+    <label>Categoria</label>
+    <div class="chips" id="fCategoria"></div>
+  </div>
+
+  <div class="campo">
+    <label>Chi ha pagato</label>
+    <div class="chips" id="fPagante">
+      <button class="chip m" data-chi="matteo" aria-pressed="false">Matteo</button>
+      <button class="chip g" data-chi="gaia" aria-pressed="false">Gaia</button>
+    </div>
+  </div>
+
+  <div class="campo" id="campoQuote">
+    <label>Come si divide</label>
+    <div class="chips" id="fQuote">
+      <button class="chip" data-q="50" aria-pressed="true">Metà e metà</button>
+      <button class="chip" data-q="100" aria-pressed="false">Tutta a Matteo</button>
+      <button class="chip" data-q="0" aria-pressed="false">Tutta a Gaia</button>
+      <button class="chip" data-q="custom" aria-pressed="false">Altre quote</button>
+    </div>
+    <div class="slider hidden" id="boxSlider">
+      <input id="fSlider" type="range" min="0" max="100" step="5" value="50" aria-label="Percentuale a carico di Matteo">
+      <span class="leg" id="legSlider">Matteo 50% / Gaia 50%</span>
+    </div>
+    <p class="leg" id="anteprima" style="font-size:13px;color:var(--soft);margin:10px 0 0"></p>
+  </div>
+
+  <div class="campo">
+    <label for="fNote">Note</label>
+    <input id="fNote" type="text" placeholder="facoltativo">
+  </div>
+
+  <div style="display:flex;gap:10px">
+    <button id="btnAnnulla" class="btn ghost" style="flex:1">Annulla</button>
+    <button id="btnSalva" class="btn" style="flex:2">Salva</button>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =====================================================================
+   CONFIGURAZIONE — le due righe da compilare dopo aver creato il
+   progetto Supabase. Si trovano in Settings > API Keys.
+   Serve la publishable key (sb_publishable_...), che sui progetti nuovi
+   ha preso il posto della vecchia anon key. È pubblica per definizione:
+   è normale che stia qui, a proteggere i dati sono le policy RLS di
+   schema.sql. La secret key non va mai messa in questo file.
+   ===================================================================== */
+const CONFIG = {
+  url:       'https://XXXXXXXXXXXX.supabase.co',
+  publicKey: 'INCOLLA_QUI_LA_PUBLISHABLE_KEY'
+};
+
+const CATEGORIE = ['Spesa','Casa','Bollette','Fuori','Trasporti','Salute','Altro'];
+const NOMI = { matteo:'Matteo', gaia:'Gaia' };
+
+const db = window.supabase.createClient(CONFIG.url, CONFIG.publicKey);
+let io = null;        // 'matteo' o 'gaia', chi ha fatto login
+let righe = [];       // le spese caricate
+let apertaId = null;  // riga espansa nell'elenco
+let modo = 'spesa';   // 'spesa' o 'rimborso'
+const $ = s => document.querySelector(s);
+
+/* ---------- formattazione ---------- */
+function chf(n){
+  const neg = n < -0.004;
+  const [i,d] = Math.abs(n).toFixed(2).split('.');
+  return (neg ? '−' : '') + i.replace(/\B(?=(\d{3})+(?!\d))/g, "'") + '.' + d;
+}
+const fmtMese = new Intl.DateTimeFormat('it-CH', { month:'long', year:'numeric' });
+const oggi = () => new Date().toISOString().slice(0,10);
+
+/* ---------- calcolo del saldo ---------- */
+function quotaDi(r, chi){
+  const imp = Number(r.importo);
+  if (r.tipo === 'rimborso') return r.pagato_da === chi ? 0 : imp;
+  const perc = chi === 'matteo' ? Number(r.quota_matteo) : 100 - Number(r.quota_matteo);
+  return imp * perc / 100;
+}
+function saldoDi(chi){
+  return righe.reduce((acc,r) =>
+    acc + ((r.pagato_da === chi ? Number(r.importo) : 0) - quotaDi(r, chi)), 0);
+}
+
+/* =====================================================================
+   Login
+   ===================================================================== */
+async function entra(){
+  const email = $('#email').value.trim();
+  const pw = $('#password').value;
+  if (!email || !pw) return mostraErrore('#erroreLogin', 'Inserisci email e password.');
+  $('#btnEntra').disabled = true;
+  $('#btnEntra').textContent = 'Un attimo…';
+  const { error } = await db.auth.signInWithPassword({ email, password: pw });
+  $('#btnEntra').disabled = false;
+  $('#btnEntra').textContent = 'Entra';
+  if (error) return mostraErrore('#erroreLogin', 'Email o password non corretti.');
+  $('#password').value = '';
+  avvia();
+}
+
+async function avvia(){
+  const { data:{ session } } = await db.auth.getSession();
+  if (!session){
+    $('#vistaApp').classList.add('hidden');
+    $('#vistaLogin').classList.remove('hidden');
+    return;
+  }
+  const { data, error } = await db.from('membri')
+    .select('nome').eq('user_id', session.user.id).maybeSingle();
+  if (error || !data){
+    mostraErrore('#erroreLogin',
+      'Questo account non è collegato a nessun membro. Aggiungi la riga in tabella membri, come descritto in schema.sql.');
+    await db.auth.signOut();
+    $('#vistaApp').classList.add('hidden');
+    $('#vistaLogin').classList.remove('hidden');
+    return;
+  }
+  io = data.nome;
+  $('#vistaLogin').classList.add('hidden');
+  $('#vistaApp').classList.remove('hidden');
+  await carica();
+}
+
+/* =====================================================================
+   Caricamento e disegno
+   ===================================================================== */
+async function carica(){
+  $('#stato').textContent = 'Caricamento…';
+  const { data, error } = await db.from('spese')
+    .select('*').order('data', { ascending:false }).order('creato_il', { ascending:false });
+  if (error){
+    $('#stato').textContent = 'Non riesco a leggere le spese: ' + error.message;
+    return;
+  }
+  righe = data || [];
+  disegnaSaldo();
+  disegnaElenco();
+  $('#stato').textContent = 'Aggiornato alle ' +
+    new Date().toLocaleTimeString('it-CH',{hour:'2-digit',minute:'2-digit'}) +
+    ' · ' + righe.length + (righe.length === 1 ? ' movimento' : ' movimenti');
+}
+
+function disegnaSaldo(){
+  const mio = saldoDi(io);
+  const altro = io === 'matteo' ? 'gaia' : 'matteo';
+  const box = $('#saldo');
+  box.classList.remove('verso-gaia','pari');
+  if (Math.abs(mio) < 0.01){
+    box.classList.add('pari');
+    $('#saldoTesto').textContent = 'Siete pari';
+    $('#saldoCifra').textContent = '0.00';
+    $('#saldoNota').textContent = 'Nessuno deve niente a nessuno.';
+    $('#btnSalda').classList.add('hidden');
+  } else if (mio > 0){
+    if (io === 'gaia') box.classList.add('verso-gaia');
+    $('#saldoTesto').textContent = NOMI[altro] + ' ti deve';
+    $('#saldoCifra').textContent = chf(mio);
+    $('#saldoNota').textContent = 'Hai anticipato più della tua quota.';
+    $('#btnSalda').classList.remove('hidden');
+  } else {
+    if (io === 'matteo') box.classList.add('verso-gaia');
+    $('#saldoTesto').textContent = 'Devi a ' + NOMI[altro];
+    $('#saldoCifra').textContent = chf(-mio);
+    $('#saldoNota').textContent = 'Ha anticipato più della sua quota.';
+    $('#btnSalda').classList.remove('hidden');
+  }
+}
+
+function disegnaElenco(){
+  const el = $('#elenco');
+  el.innerHTML = '';
+  if (!righe.length){
+    el.innerHTML = '<p class="vuoto">Ancora nessuna spesa. Aggiungi la prima qui sopra.</p>';
+    return;
+  }
+  let meseCorrente = null;
+  for (const r of righe){
+    const d = new Date(r.data + 'T00:00:00');
+    const chiave = r.data.slice(0,7);
+    if (chiave !== meseCorrente){
+      meseCorrente = chiave;
+      const tot = righe
+        .filter(x => x.data.slice(0,7) === chiave && x.tipo === 'spesa')
+        .reduce((s,x) => s + Number(x.importo), 0);
+      const h = document.createElement('div');
+      h.className = 'mese';
+      h.innerHTML = '<h2>' + fmtMese.format(d) + '</h2><span class="tot num">' + chf(tot) + '</span>';
+      el.appendChild(h);
+    }
+
+    const qm = Number(r.quota_matteo);
+    const b = document.createElement('button');
+    b.className = 'riga' + (r.tipo === 'rimborso' ? ' rimb' : '');
+    b.setAttribute('aria-expanded', String(apertaId === r.id));
+    b.innerHTML =
+      '<span class="l1">' +
+        '<span class="desc"><span class="giorno num">' + String(d.getDate()).padStart(2,'0') + '</span>' +
+          escapeHtml(r.descrizione) + '</span>' +
+        '<span class="imp num">' + chf(Number(r.importo)) + '</span>' +
+      '</span>' +
+      '<span class="l2">' +
+        '<span class="meta">' + NOMI[r.pagato_da] + ' ha pagato' +
+          (r.tipo === 'spesa' ? ' · ' + r.categoria : '') + '</span>' +
+        (r.tipo === 'spesa'
+          ? '<span class="quota" title="Matteo ' + qm + '%, Gaia ' + (100-qm) + '%">' +
+              '<i class="m" style="width:' + qm + '%"></i><i class="g" style="width:' + (100-qm) + '%"></i>' +
+            '</span>'
+          : '<span class="meta">rimborso</span>') +
+      '</span>';
+    b.onclick = () => { apertaId = (apertaId === r.id ? null : r.id); disegnaElenco(); };
+    el.appendChild(b);
+
+    if (apertaId === r.id){
+      const det = document.createElement('div');
+      det.className = 'dettaglio';
+      const mioCarico = quotaDi(r, io);
+      det.innerHTML =
+        '<dl>' +
+          (r.tipo === 'spesa'
+            ? '<div><dt>Quote</dt><dd>Matteo ' + qm + '% (' + chf(Number(r.importo)*qm/100) + ') · Gaia ' +
+              (100-qm) + '% (' + chf(Number(r.importo)*(100-qm)/100) + ')</dd></div>' +
+              '<div><dt>A tuo carico</dt><dd>' + chf(mioCarico) + ' CHF</dd></div>'
+            : '<div><dt>Movimento</dt><dd>' + NOMI[r.pagato_da] + ' ha rimborsato ' +
+              NOMI[r.pagato_da === 'matteo' ? 'gaia' : 'matteo'] + '</dd></div>') +
+          (r.note ? '<div><dt>Note</dt><dd>' + escapeHtml(r.note) + '</dd></div>' : '') +
+        '</dl>' +
+        '<button class="btn ghost" data-elimina="' + r.id + '">Elimina</button>';
+      det.querySelector('[data-elimina]').onclick = () => elimina(r);
+      el.appendChild(det);
+    }
+  }
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function elimina(r){
+  if (!confirm('Eliminare "' + r.descrizione + '" da ' + chf(Number(r.importo)) + ' CHF?')) return;
+  const { error } = await db.from('spese').delete().eq('id', r.id);
+  if (error){ alert('Non sono riuscito a eliminare: ' + error.message); return; }
+  apertaId = null;
+  carica();
+}
+
+/* =====================================================================
+   Pannello di inserimento
+   ===================================================================== */
+function costruisciCategorie(){
+  const c = $('#fCategoria');
+  c.innerHTML = '';
+  CATEGORIE.forEach((cat,i) => {
+    const b = document.createElement('button');
+    b.className = 'chip';
+    b.textContent = cat;
+    b.setAttribute('aria-pressed', String(i === 0));
+    b.onclick = () => {
+      [...c.children].forEach(x => x.setAttribute('aria-pressed','false'));
+      b.setAttribute('aria-pressed','true');
+    };
+    c.appendChild(b);
+  });
+}
+const scelto = sel => [...document.querySelectorAll(sel + ' .chip')]
+  .find(x => x.getAttribute('aria-pressed') === 'true');
+
+function apri(tipo){
+  modo = tipo;
+  $('#erroreSheet').classList.add('hidden');
+  $('#sheetTitolo').textContent = tipo === 'spesa' ? 'Nuova spesa' : 'Registra un rimborso';
+  $('#campoCategoria').classList.toggle('hidden', tipo !== 'spesa');
+  $('#campoQuote').classList.toggle('hidden', tipo !== 'spesa');
+  $('#fData').value = oggi();
+  $('#fNote').value = '';
+  $('#boxSlider').classList.add('hidden');
+
+  if (tipo === 'spesa'){
+    $('#fImporto').value = '';
+    $('#fDescrizione').value = '';
+    $('#fDescrizione').placeholder = 'Spesa Coop, affitto, bolletta…';
+    impostaPagante(io);
+    impostaQuote('50');
+  } else {
+    const mio = saldoDi(io);
+    // chi è in debito è chi paga il rimborso
+    const paga = mio < 0 ? io : (io === 'matteo' ? 'gaia' : 'matteo');
+    $('#fImporto').value = Math.abs(mio).toFixed(2);
+    $('#fDescrizione').value = 'Rimborso';
+    impostaPagante(paga);
+  }
+  $('#velo').classList.remove('hidden');
+  $('#sheet').classList.remove('hidden');
+  aggiornaAnteprima();
+  setTimeout(() => $('#fImporto').focus(), 60);
+}
+function chiudi(){
+  $('#velo').classList.add('hidden');
+  $('#sheet').classList.add('hidden');
+}
+function impostaPagante(chi){
+  document.querySelectorAll('#fPagante .chip').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.chi === chi)));
+}
+function impostaQuote(v){
+  document.querySelectorAll('#fQuote .chip').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.q === v)));
+  $('#boxSlider').classList.toggle('hidden', v !== 'custom');
+}
+function quotaScelta(){
+  const c = scelto('#fQuote');
+  if (!c) return 50;
+  return c.dataset.q === 'custom' ? Number($('#fSlider').value) : Number(c.dataset.q);
+}
+function aggiornaAnteprima(){
+  if (modo !== 'spesa'){ $('#anteprima').textContent = ''; return; }
+  const imp = Number($('#fImporto').value || 0);
+  const q = quotaScelta();
+  $('#legSlider').textContent = 'Matteo ' + q + '% / Gaia ' + (100-q) + '%';
+  $('#anteprima').textContent = imp > 0
+    ? 'Matteo ' + chf(imp*q/100) + ' CHF, Gaia ' + chf(imp*(100-q)/100) + ' CHF'
+    : '';
+}
+
+async function salva(){
+  const imp = Number($('#fImporto').value);
+  const desc = $('#fDescrizione').value.trim();
+  const paga = scelto('#fPagante');
+  if (!(imp > 0)) return mostraErrore('#erroreSheet','Inserisci un importo maggiore di zero.');
+  if (!desc)      return mostraErrore('#erroreSheet','Metti una descrizione, serve per ritrovarla dopo.');
+  if (!paga)      return mostraErrore('#erroreSheet','Indica chi ha pagato.');
+
+  const riga = {
+    data: $('#fData').value || oggi(),
+    descrizione: desc,
+    importo: imp,
+    pagato_da: paga.dataset.chi,
+    tipo: modo,
+    note: $('#fNote').value.trim() || null,
+    categoria: modo === 'spesa' ? (scelto('#fCategoria')?.textContent || 'Altro') : 'Altro',
+    quota_matteo: modo === 'spesa' ? quotaScelta() : 50
+  };
+  $('#btnSalva').disabled = true;
+  $('#btnSalva').textContent = 'Salvo…';
+  const { error } = await db.from('spese').insert(riga);
+  $('#btnSalva').disabled = false;
+  $('#btnSalva').textContent = 'Salva';
+  if (error) return mostraErrore('#erroreSheet','Non sono riuscito a salvare: ' + error.message);
+  chiudi();
+  carica();
+}
+
+function mostraErrore(sel, testo){
+  const e = $(sel);
+  e.textContent = testo;
+  e.classList.remove('hidden');
+}
+
+function esporta(){
+  const blob = new Blob([JSON.stringify(righe, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'spese-casa-' + oggi() + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* =====================================================================
+   Collegamenti
+   ===================================================================== */
+$('#btnEntra').onclick = entra;
+$('#password').addEventListener('keydown', e => { if (e.key === 'Enter') entra(); });
+$('#btnAggiungi').onclick = () => apri('spesa');
+$('#btnSalda').onclick = () => apri('rimborso');
+$('#btnAnnulla').onclick = chiudi;
+$('#velo').onclick = chiudi;
+$('#btnSalva').onclick = salva;
+$('#btnRicarica').onclick = carica;
+$('#btnEsporta').onclick = esporta;
+$('#btnEsci').onclick = async () => { await db.auth.signOut(); location.reload(); };
+$('#fImporto').addEventListener('input', aggiornaAnteprima);
+$('#fSlider').addEventListener('input', aggiornaAnteprima);
+document.querySelectorAll('#fPagante .chip').forEach(b =>
+  b.onclick = () => impostaPagante(b.dataset.chi));
+document.querySelectorAll('#fQuote .chip').forEach(b =>
+  b.onclick = () => { impostaQuote(b.dataset.q); aggiornaAnteprima(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') chiudi(); });
+
+// ricarica quando si torna sull'app, così si vedono le spese dell'altra persona
+let ultimo = Date.now();
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && io && Date.now() - ultimo > 20000){
+    ultimo = Date.now();
+    carica();
+  }
+});
+
+costruisciCategorie();
+$('#fData').value = oggi();
+avvia();
+</script>
+</body>
+</html>
